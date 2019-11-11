@@ -1,0 +1,6 @@
+include /usr/local/share/nano/*.nanorc
+
+set linenumbers
+set constantshow
+
+set tabsize 4
