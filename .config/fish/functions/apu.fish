@@ -31,13 +31,13 @@ function apu
     # Mount if flag is set
     else if set -q _flag_m
         echo "Mounting APU volume on "$mount_path"..."
-        sshfs ubuntu@160.85.253.47:/home/ubuntu $mount
-        open $mount
+        sshfs ubuntu@160.85.253.47:/home/ubuntu $mount_path
+        open $mount_path
 
     # Unmount APU volume
     else if set -q _flag_u
         echo "Unmounting APU volume..."
-        unmount -f $mount_path
+        umount -f $mount_path
 
     # Perform sync
     else if set -q _flag_s
