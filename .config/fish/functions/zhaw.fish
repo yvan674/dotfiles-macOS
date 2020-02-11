@@ -15,6 +15,10 @@ function zhaw
         echo "    -k, --kill         : Kills any port forwarding sessions. This is a mutually"
         echo "                         exclusive option from the rest of the options. This is"
         echo "                         always executed first."
+        echo "    -m, --mount [path] : Mounts the selected path on the DGX server on the local"
+        echo "                         machine. Defaults to /cluster/home/saty."
+        echo "    -u, --unmount      : Forcibly unmounts all DGX volumes which are locally"
+        echo "                         mounted."
         echo "    -h, --help         : Shows this help page."
         functions -e _zhaw_show_usage  # Erase usage
 	end
@@ -22,13 +26,15 @@ function zhaw
     # Set the variables
     set server "dgx"
     set port "9177"
+    set path "/cluster/home/saty/"
+    set mount "/Volumes/DGX"(random 0 9)
     
-    # Parse args and give help is error is thrown
-    argparse --name=zhaw 'b=' 'f/forward=' 't/tensorboard' 's/sync' 'k/kill' 'h/help' -- $argv
+    # Parse args and give help if error is thrown
+    argparse --name=zhaw 'b=' 'f/forward=' 't/tensorboard' 's/sync' 'k/kill' 'm/mount=?' 'u/unmount' 'h/help' -- $argv
     or _zhaw_show_usage && return 1
 
-    # Show usage is no flags are set or if help flag is set
-    if not begin ; set -q _flag_b ; or set -q _flag_f ; or set -q _flag_t ; or set -q _flag_s ; or set -q _flag_k ; or set -q _flag_h ; end
+    # Show usage is no flags are sety
+    if not begin ; set -q _flag_b ; or set -q _flag_f ; or set -q _flag_t ; or set -q _flag_s ; or set -q _flag_k ; or set -q _flag_h ; or set -q _flag_m ; or set -q _flag_u ; end
         echo Error: zhaw requires at least one option to be selected.
         _zhaw_show_usage && return 1
     end
@@ -76,6 +82,13 @@ function zhaw
         end
     end
 
+    # Parse mounting arg
+    if set -q _flag_m
+        if [ -n "$_flag_m" ]
+            set path $_flag_m
+        end
+    end
+
     # Now do cases. First is both forwarding and tensorboard
     if begin ; set -q _flag_f ; and set -q _flag_t ; end
         echo 'Forwarding Tensorboard port from '(set_color red)'dgx2'(set_color normal)' and forwarding port '(set_color red)$port(set_color normal)' from '(set_color red)$server(set_color normal)' server'
@@ -95,5 +108,16 @@ function zhaw
     # The case for sync
     else if set -q _flag_s
 		rsync -avz --delete /Users/Yvan/OneDrive/ZHAW/Sync/ saty@dgx2.cloudlab.zhaw.ch:/cluster/home/saty/sync
+
+    # The case for mounting
+    else if set -q _flag_m
+        echo "Mounting "$path" on "$mount"..."
+        sshfs saty@dgx.cloudlab.zhaw.ch:$path $mount
+        open $mount
+
+    # The case for unmounting
+    else if set -q _flag_u
+        echo "Unmounting all DGX volumes..."
+        ls -1 /Volumes | grep "DGX" | sed 's/^/\/Volumes\//' | xargs unmount -f
 	end
 end

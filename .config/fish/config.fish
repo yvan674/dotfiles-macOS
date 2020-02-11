@@ -13,6 +13,9 @@ test -e {$HOME}/.iterm2_shell_integration.fish ; and source {$HOME}/.iterm2_shel
 # Color scheme for theme
 set theme_color_scheme terminal2-light-black
 
+# Set theme settings
+set -g theme_dsplay_cmd_duration no
+
 # dotfiles git
 alias dotfiles "/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME" 
 
