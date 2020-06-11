@@ -3,7 +3,8 @@ function apu
         echo "usage: apu [options]"
         echo ""
         echo "Options and arguments:"
-        echo "    -m --mount   : Mounts the APU volume locally using sshfs."
+        echo "    -m --mount   : Mounts the APU volume home locally using sshfs."
+        echo "    -d --data    : Mounts the APU data volume locally using sshfs."
         echo "    -u --unmount : Unmounts all local APU volumes."
         echo "    -s --sync    : Performs an rsync command between the local sync directory"
         echo "                   with the APU instance."
@@ -13,15 +14,17 @@ function apu
 
     # Set mounting variable
     set mount_path "/Volumes/APU"
+    set data_mount_path "/Volumes/APU_data"
 
     # Parse args and give help if error is thrown
-    argparse --name=apu 'm/mount' 'u/umount' 's/sync' 'h/help' -- $argv
+    argparse --name=apu 'm/mount' 'd/data' 'u/umount' 's/sync' 'h/help' -- $argv
     or _zhaw_show_usage && return 1
 
-    # Trow error if no flags are set
-    if not begin ; set -q _flag_m ; or set -q _flag_u ; or set -q _flag_s ; end
-        echo "Error: apu requires at least one option to be selected."
-        _zhaw_show_usage && return 1
+    # Echo the IP address if no flags are shown
+    if not begin ; set -q _flag_m ; or set -q _flag_d ; or set -q _flag_u ; or set -q _flag_s ; end
+        echo "APU address is:"
+        echo "160.85.253.47"
+        return 0
     end
 
     # Show help if help is asked for
@@ -34,10 +37,17 @@ function apu
         sshfs ubuntu@160.85.253.47:/home/ubuntu $mount_path
         open $mount_path
 
+    # Mount data if flag set
+    else if set -q _flag_d
+        echo "Mounting APU data volume on "$data_mount_path"..."
+        sshfs ubuntu@160.85.253.47:/data $data_mount_path
+        open $data_mount_path        
+
     # Unmount APU volume
     else if set -q _flag_u
         echo "Unmounting APU volume..."
         umount -f $mount_path
+        umount -f $data_mount_path
 
     # Perform sync
     else if set -q _flag_s

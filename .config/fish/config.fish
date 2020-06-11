@@ -15,6 +15,7 @@ set theme_color_scheme terminal2-light-black
 
 # Set theme settings
 set -g theme_display_cmd_duration no
+set -g theme_nerd_fonts yes
 
 # dotfiles git
 alias dotfiles "/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME" 
@@ -25,3 +26,4 @@ set fish_ambiguous_width 1
 
 # Sudo alias
 alias 😠 "sudo"
+alias please "sudo"
